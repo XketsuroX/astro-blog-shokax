@@ -1,0 +1,72 @@
+---
+title: Set Theory
+author: ketsuro
+math: true
+date: 2024-9-21 16:59:00
+categories:
+  - Notes
+  - MA2185 Discrete Mathematics
+---
+
+# Introduction
+
+If you have learnt python, you may heard of a datatype call `set`, in math set is a collection of objects, which may seems similar to what the set in python. Following content will you what symbols are there related to set base on you have the concept that what `set` and `subset` is.
+> Noted that this post are still on progress and waiting for update of the blogger.
+
+
+# Symbols
+We having symbols in set and same as logic to reduce the time writing the redundant words, you can find most of them with same meaning in logical expression. 
+
+- In $\in$
+>$x \in A$ if an element in the set $A$;
+- Subset $\subset$
+> subset is the same meaning as implies in logic  $A \subset B \iff \forall x[x \in A \implies x \in B]$
+
+- Equality $=$
+>Say $A=B$, means that the element in A and B is completely same, i.e. $A \subset B \land B \subset A$
+
+- Universal identifier $U$ 
+>It's the largest possible set under consideration
+
+- Empty Set $\phi$
+>The set contain no element 
+
+- Union $\cup$
+>Same as $\lor$, means the element appears in either both set.
+
+- Intersection $\cap$
+>Same as $\land$, means the element appears in both set.
+
+- Difference $A-B$
+>Same as $A\lnot B$, means the element appears in A but not B
+
+- Complement $A^c$
+>Same as $\lnot A$, means the element not appears in B
+
+# Simple distinguishment of sets
+We can separate set into 2 type in simple basis: `Finite` and `Infinite`
+## Finite
+A finite set have a specified amount of element, we usually write it as: $|A| = n$, stating that set A has n distinct element. If we can't provide n, we say it as an infinite set.
+
+## Infinite
+A infinite set is the opposite of finite set.
+
+E.g. Universal identifier $U$ is one example, if the number space is all positive integers.
+
+# Cartesian Products
+In fact, we can do "multiplication" on sets, like $A\times B$. But the product will be somethings special, It is a datatype call `tuple`.
+
+## Tuple
+If you python, you should heard of it. Tuple is the ordered collection of various element.
+We write tuple like this: $(A_1,A_2,A_3,....,A_n)$
+
+## Cartesian Products
+What $A\times B$, gives you is in fact some sets of tuple. Those are all possible combination of elements in set A and set B, i.e. $A\times B \iff \{(a,b) : a\in A \land b \in B\}$.
+
+Although $A \times B \neq B\times A$, but  $|A| \times |B| = |B| \times |A|$, As the amount possible combinations will always the same.
+# Relation
+A relation between sets is simply means the subset of cartesian product of those sets.
+$$R \subseteq A \times B$$
+Relations can have either have actual meaning or not. Following is an example of relation with meaning 
+$$F = \{(x,y) | \text{Airline x files to city y} \}$$
+	So if $(x,y) \in R$, we can also write $x\ R\ y$, else $x\ \not R \ y$

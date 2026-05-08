@@ -1,0 +1,124 @@
+---
+categories:
+  - Blog 部署系列
+title: ShokaX 4.11 遷移成功
+date: 2025-02-20 15:12:51
+---
+是的，博主突然就成功了，發現之前無限加載原來是Cloudflare導致的，由於啓用了rocket loader會令網頁Async 加載js，估計是那個地方出了點岔子。只要將他關閉就可以了。 這次的Dockerfile如下
+
+```docker 船新版本
+FROM node:latest
+
+
+# Set the server port as an environmental
+ENV HEXO_SERVER_PORT=4000
+
+# Set the git username and email
+ENV GIT_USER="ketsuro"
+ENV GIT_EMAIL="ketsuro04@outlook.com"
+
+# Set the user and group that the file inside docker belongs to  
+ENV SCRIPT_USER="ketsuro"
+ENV SCRIPT_GROUP="users"
+
+# Install requirements 
+RUN \
+  apt-get update && \
+  apt-get install git -y && \
+  npm install hexo-cli -g
+
+# Set workdir
+WORKDIR /app
+
+# Expose Server Port
+EXPOSE ${HEXO_SERVER_PORT}
+
+# Build a base server and configuration if it doesnt exist, then start
+CMD \
+  if [ "$(ls -A /app)" ]; then \
+    echo "***** App directory exists and has content, continuing *****"; \
+  else \
+    echo "***** App directory is empty, initialising with hexo and hexo-admin*****" && \
+    hexo init && \
+    npm install && \
+    echo "***** Installing ShokaX ****" && \
+    npm add hexo-theme-shokax && \
+    echo "***** Continue with hexo admin and server ****" && \
+    npm install hexo-admin && \
+    npm install hexo-server; \
+  fi; \
+  if [ ! -f /app/requirements.txt ]; then \
+    echo "***** App directory contains no requirements.txt file, continuing *****"; \
+  else \
+    echo "***** App directory contains a requirements.txt file, installing npm requirements *****"; \
+    cat /app/requirements.txt | xargs npm --prefer-offline install; \
+  fi; \
+  if [ "$(ls -A /app/.ssh 2>/dev/null)" ]; then \
+    echo "***** App .ssh directory exists and has content, continuing *****"; \
+  else \
+    echo "***** App .ssh directory is empty, initialising ssh key and configuring known_hosts for common git repositories (github/gitlab) *****" && \
+    rm -rf ~/.ssh/* && \
+    ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -P "" && \
+    ssh-keyscan github.com > ~/.ssh/known_hosts 2>/dev/null && \
+    ssh-keyscan gitlab.com >> ~/.ssh/known_hosts 2>/dev/null && \
+    cp -r ~/.ssh /app; \
+  fi; \
+  echo "***** Running git config, user = ${GIT_USER}, email = ${GIT_EMAIL} *****" && \
+  git config --global user.email ${GIT_EMAIL} && \
+  git config --global user.name ${GIT_USER} && \
+  echo "***** Copying .ssh from App directory and setting permissions *****" && \
+  cp -r /app/.ssh ~/ && \
+  chmod 600 ~/.ssh/id_rsa && \
+  chmod 600 ~/.ssh/id_rsa.pub && \
+  chmod 700 ~/.ssh && \
+  echo "***** Contents of public ssh key (for deploy) - *****" && \
+  cat ~/.ssh/id_rsa.pub && \
+  echo "***** Starting server on port ${HEXO_SERVER_PORT} *****" && \
+	useradd ${SCRIPT_USER} || echo "User already exists. Skipping" && \
+	groupadd ${SCRIPT_GROUP} || echo "Group already exists. Skipping" && \
+  chmod -R 777 /app && \
+	chown -R ${SCRIPT_USER}:${SCRIPT_GROUP} /app && \
+  hexo server -d -p ${HEXO_SERVER_PORT}
+  ```
+  相比起上一次失敗，我往dockerfile裏面新增了兩個ENV variables，`SCRIPT_USER` and `SCRIPT_GROUP`。由於我會經常修改docker的volume裏面config還有md文件，如果不更改一下歸屬的話會令我每次更改都要save as root。
+  
+  # 食用方法
+  首先開啓一個名為`Dockerfile`的文件，複製以上内容進去。出去bash並輸入
+  ```bash
+  docker build -t [your_image_name]:[image_version] .
+  ```
+  如此, docker就會幫你將當前目錄下面的dockerfile以你所設立的`your_image_name` 以及版本建立成image。
+
+  接著要做的就是把docker開出來。我使用了docker compose他輔助我一次性開啓nginx 跟gitea等多個服務。 Hexo也被包括了在内。創建一個`docker-compose.yml`的文件，並修改它。我的compose設定如下：
+  ```yml
+    hexo:
+    container_name: hexo
+    restart: always
+    image: hexo:101 
+    environment:
+      - HEXO_SERVER_PORT=[port]
+      - GIT_USER="[git_user_name]"
+      - GIT_EMAIL="[git_email_adress]"
+      - SCRIPT_USER="[your os user]"
+      - SCRIPT_GROUP="[your os group]"
+    expose: # use port: and [host port]:[docker port] if you don't use nginx under the same compose file
+      - [port]
+    volumes:
+      - ./hexo:/app
+    links:
+      - twikoo # needed if you have twikoo deployed under same file
+  ```
+  這邊我使用了expose來放port，因爲我用了一個compose文件一起將他們打開，如果你不打算使用nginx，或者nginx與hexo不會處於一個network底下，請使用`port`來轉發端口到宿主機。
+  同時間，links也是非必要項目，如果你選擇在本地部署twikoo才會使用到他。
+
+  ## 運行docker compose
+  當一切的一切都搞定后，回到bash並進入與docker-compose.yml相同的目錄並運行 ```docker compose up -d```，你的image就都會變成一個個container（容器）在後臺跑起來了。
+
+  剩下你可以對其進行的操作有 
+  - 重啓整個compose file底下的容器 `docker compose restart`
+  - 關閉整個compose file底下的容器 `docker compose down`
+  - 在以上指令後面加上指定的容器，這樣子做的好處是他會自動幫你一起處理link過的容器
+  - 最後就是在docker裏面運行指令 `docker exec -it [container] [command]`
+    - 可以透過`docker exec -it [container] bash` 進入容器裏面可以交互的bash
+  # 完成
+  剩下來的，就是shokax官方文檔裏面設定了。基本跟著走就沒問題了。。。。。。吧？

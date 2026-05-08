@@ -1,0 +1,24 @@
+---
+title: Some stuff about Number system
+date: 2025-09-24
+author: 結露
+math: true
+categories:
+  - Notes
+  - Computer Organisation
+---
+# Radix
+Radix (基數) forms the basic of number system. While radix basically mean how many numbers you can put into one digit. For a radix-R system $R \in {\mathbb Z}$, The the value of those numbers will be:
+$$
+N =  \sum^{n-1}_{m} a_i \times R^i, for\ a_i \in {0,...,R-1}
+$$
+By changing R, all radix can be simulated.
+
+# Binary, Octal, Hexadecimal
+So for binary, octal and hexadecimal number, they are under R =  2, 8  and 16 respectively. Since number 2 can be dividend of both 8 and 16, we can canvert it easily using some tricky method. Let's say we have a binary number : $1011001101.1011001$
+If we want it's octal and hexadecimal version, we can re form those bits into group, each group means the exact value same as the radix, i.e., radix 8 have 0-7 as it digit, then we can merge 3 bit of binary numbers into a group. And the outcome will be like:
+
+| Oct |  2  |  6  |  3  |  5   |  5  |  4  |  4  |
+| --- | :-: | :-: | :-: | :--: | :-: | :-: | :-: |
+| Bin | 010 | 110 | 011 | 101. | 101 | 100 | 100 |
+Simply is that.

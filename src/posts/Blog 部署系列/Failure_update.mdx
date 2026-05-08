@@ -1,0 +1,99 @@
+---
+title: 一次失敗的ShokaX 升級
+author: ketsuro
+categories:
+  - Blog 部署系列
+date: 2024-12-20
+---
+# 起因
+有鑒於於ShokaX已經更新到4.0以上的版本。 我本來想趁著暑假來給ShokaX來個升級，從現在的3.4，升級到4.6。
+
+# 經過
+首先我改了一下Dockerfile，因爲ShokaX 的cli已經被放棄了，所以安裝方法也順利成章的成爲npm add。結果如下
+
+
+
+
+```docker 小小進行修改後的Dockerfile
+
+FROM node:latest
+
+
+# Set the server port as an environmental
+ENV HEXO_SERVER_PORT=4000
+
+# Set the git username and email
+ENV GIT_USER="ketsuro"
+ENV GIT_EMAIL="ketsuro04@outlook.com"
+
+# Install requirements
+RUN \
+  apt-get update && \
+  apt-get install git -y && \
+  npm install hexo-cli -g
+
+# Set workdir
+WORKDIR /app
+
+#RUN \
+#  hexo init && \
+#  npm install shokax-cli --location=global && npm install -g node-gyp && \
+#  SXC install shokaX && npm install --save hexo-admin && npm install hexo-server --save
+
+# Expose Server Port
+EXPOSE ${HEXO_SERVER_PORT}
+
+
+
+
+
+# Build a base server and configuration if it doesnt exist, then start
+CMD \
+  if [ "$(ls -A /app)" ]; then \
+    echo "***** App directory exists and has content, continuing *****"; \
+  else \
+    echo "***** App directory is empty, initialising with hexo and hexo-admin*****" && \
+    hexo init && \
+    npm install && \
+    echo "***** Installing ShokaX ****" && \
+    npm add hexo-theme-shokax && \
+    echo "***** Continue with hexo admin and server ****" && \
+    npm install --save hexo-admin && \
+    npm install hexo-server --save; \
+  fi; \
+  if [ ! -f /app/requirements.txt ]; then \
+    echo "***** App directory contains no requirements.txt file, continuing *****"; \
+  else \
+    echo "***** App directory contains a requirements.txt file, installing npm requirements *****"; \
+    cat /app/requirements.txt | xargs npm --prefer-offline install --save; \
+  fi; \
+  if [ "$(ls -A /app/.ssh 2>/dev/null)" ]; then \
+    echo "***** App .ssh directory exists and has content, continuing *****"; \
+  else \
+    echo "***** App .ssh directory is empty, initialising ssh key and configuring known_hosts for common git repositories (github/gitlab) *****" && \
+    rm -rf ~/.ssh/* && \
+    ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -P "" && \
+    ssh-keyscan github.com > ~/.ssh/known_hosts 2>/dev/null && \
+    ssh-keyscan gitlab.com >> ~/.ssh/known_hosts 2>/dev/null && \
+    cp -r ~/.ssh /app; \
+  fi; \
+  echo "***** Running git config, user = ${GIT_USER}, email = ${GIT_EMAIL} *****" && \
+  git config --global user.email ${GIT_EMAIL} && \
+  git config --global user.name ${GIT_USER} && \
+  echo "***** Copying .ssh from App directory and setting permissions *****" && \
+  cp -r /app/.ssh ~/ && \
+  chmod 600 ~/.ssh/id_rsa && \
+  chmod 600 ~/.ssh/id_rsa.pub && \
+  chmod 700 ~/.ssh && \
+  echo "***** Contents of public ssh key (for deploy) - *****" && \
+  cat ~/.ssh/id_rsa.pub && \
+  echo "***** Starting server on port ${HEXO_SERVER_PORT} *****" && \
+  hexo server -d -p ${HEXO_SERVER_PORT}
+
+```
+
+
+嘛，結果是好的，但事情卻在改theme的時候變得糟糕了起來。首先，在換了theme之後，這個加載畫面會不停的load，卡在這裏了，一看docker的logs，原來是有報錯在不停的重啓。報錯結果如下：
+```(node:30) [DEP0066] DeprecationWarning: OutgoingMessage.prototype._headers is deprecated```
+看了看，猜測是因爲nginx用http去做proxy_pass，所以把他改成https。這個報錯奇妙的消失了。
+爲什麽説是奇妙呢，因爲他在解決後依然瘋狂重啓，并且沒有任何報錯，在把事情嘗試過好幾次后依舊如此，所以我只好放棄這次的升級，等下次緣分到了再試一下搞他。

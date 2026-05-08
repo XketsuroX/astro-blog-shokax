@@ -2,8 +2,8 @@
 title: Explore the various customization options available in ShokaX theme configuration.
 date: 2025-12-04
 tags: [customization, config, styling]
-categories: ${folder}
-draft: false
+categories: [Advanced, Tutorial]
+draft: true
 ---
 
 # remark 插件综合测试文档
@@ -42,7 +42,7 @@ WIP
 
 ## 3. remarkIns（插入文本）
 
-使用 ++ 语法表示插入内容：
+使用 `++` 语法表示插入内容：
 
 这是一个 ++新增的内容++，用于测试 remark-ins。
 
@@ -54,7 +54,7 @@ WIP
 
 自定义文本指令示例：
 
-:badge
+`:badge`
 
 ---
 

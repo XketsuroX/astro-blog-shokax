@@ -1,0 +1,98 @@
+---
+title: Mathematical logic
+author: ketsuro
+categories:
+  - Notes
+  - MA2185 Discrete Mathematics
+math: true
+date: 2024-9-21 16:59:00  
+---
+# Logic Expression
+$\land \text {: stands for and, if both a and b are true, they are true}$
+$\lor: \text {stand for or, if a is true or b is true, ther are true}$
+$\lnot \text {: stand for not, if a is true, then a is false, vice versa.}$
+$\implies \text {:stands for implies, if } a \implies b \text {is true then when a is true, b will only be false, while when a is false, b can be either one. }$
+$\iff \text {: stand for "if and only if" if } a \iff b \equiv (a \implies b) \land (b \implies a)$
+
+
+# Logic inference
+
+Logic inference gives you couple number of assumptions, and a conclusion, then you need to prove whether it is valid.
+
+## Method 1
+One Method is try to prove It is correct
+
+
+For example,  Try to prove following argument are valid:
+>Taxes will increase or government spending decrease. Government spending increases or more people have jobs. If  people are poor or the economy is bad, then fewer people  will have jobs. Therefore, if taxes decrease, people are rich.
+
+First , let's let
+$I = \text {Taxes will invrease}$
+$G=\text{Government spending decreases}$
+$J= \text {More people have jobs}$
+$P=\text {Prople are rich}$
+$E = \text{Economy is bad}$
+
+Then you will have following proposition:
+$$\begin{cases} 1. I \lor G \\ 2.\lnot G \lor J \\ 3.\lnot P \lor R \implies \lnot J \end {cases}$$
+The conclusion will be $\lnot I \implies P$
+
+
+To solve it, first let $I = F$.
+From `1.` We know $G=T$
+Then, We can found $J = T$,
+Form `3.` We can deduce $J \implies P \land \lnot R, hence\ P \land \lnot R = T$
+so $P = T \land \lnot R = T$
+Finally we can claim that $\lnot I \implies P$
+
+
+## Method 2
+
+Another way is assuming the conclusion is false.
+
+Having the following argument:
+>There are many job vacancies and the unemployment rate is low. If  there are many job vacancies, then either the economy is thriving or  wages are too low. If wages are not too low, then the unemployment rate  is low. Therefore, the economy is thriving.
+
+Let :
+J = There are many job vacancies,
+U = Unemployment rate is low
+E = The economy is thriving
+W = wages are too low
+
+We have following proposition:
+$1. J \land U$
+$2. J \implies E\lor W$
+$3. \lnot W\implies U$
+
+And conclusion is $E$
+Let $E = False$
+$\lnot E\land \lnot W \implies \lnot J$
+
+let $W= True$
+$\lnot  J = False, J = True$
+$\lnot W \implies U = True, U = True$
+$J \land U = True$
+Hence, there exist a case that $E=False$, the case is invalid.
+
+
+# Mathematical Induction
+We use induction to prove some theory is whether true.
+It involves three steps:
+1. State out a theorem.
+2. Prove that an base case is true. (e.g. P(0))
+3. Prove that $P(n) \implies P(n+1) = True$
+
+
+For example, we try to prove $$\forall x \geq 0, 1+2+3+.....+n = \frac {n(n+1)} {2}$$
+Indeed, this is what the gaussian summation is:
+$$\forall x \geq 0, \sum^n_{i=1} i = \frac {n(n+1)} {2}$$
+So, for the Proof, Let's try to prove P(0) is true for the theorem:
+$P(0) = \frac {0(n+1)} {2} = 0$ , Which is True.
+
+Then, We are going to proof $P(n) \implies P(n+1)$ is True
+Let's assume P(n) is True for the purpose of induction:
+$P(n)= \frac {n(n+1)}{2} = True$
+If P (n) = True,  Then how about P (n+1)? Let's see:
+$P (n+1) = \sum^{n+1}_{i=1} i = P(n) + (n+1) = \frac {n(n+1)} {2} +n+1 =\frac {n^2 +3n+2} {2} =\frac {(n+1)(n+2)} {2}$, Which is true.
+Such that, $P(n) \implies P (n+1)$ stands.
+And as P (0) is true, we successfully prove that $\forall x \geq 0, 1+2+3+.....+n = \frac {n (n+1)}{2}$

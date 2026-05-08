@@ -1,0 +1,97 @@
+---
+title: 什麽?還有更好的L2D
+author: ketsuro
+categories:
+  - Blog 部署系列
+date: 2025-02-20 15:12:51
+---
+在出去hexo live2d的世界外， 我們還有一個神奇的[live2d widgets](https://github.com/stevenjoezhang/live2d-widget)可以使用。當然要做的步驟就多不少了。但相對的，他的功能也更多地多樣化。
+
+# 安裝
+
+如果我是懶人，最簡單的方法就是去GitHub的readme上獲取即食罐頭 `<script src="https://fastly.jsdelivr.net/npm/live2d-widgets@0/autoload.js"></script>` , 然後放到網頁裏。
+
+當然你會發現hexo好像沒得隨便給你注入html，此時shokax提供的注入器就有了大用。
+
+## 注入器
+根據遠古的文檔，我們可以得知hexo能用這個方法注入html。
+
+```js
+hexo.extend.filter.register("theme_inject", function (injects) {
+    // 此处放置注入代码
+  });
+```
+
+  於是我嘗試性質的使用了，然而直接注入失敗了。在這裏讓我們跳過各種排錯過程，跳到答案。實際上，他只是給了一個位置注入，但實際的注入代碼，還需要仰賴hexo提供的[注入器](https://hexo.io/api/injector)。
+ 
+ 注入器的使用方法很簡單，只需要register了注入點，注入内容，以及注入位置。
+
+ ### 注入點
+ shokax 提供了不少的注入點。截至v0.4.20，你能在repo的`/script/plugin/lib/inject-point.ts` 裏面找到具體注入點如下:
+
+ ```typescript  
+ export default {
+  views: [
+    'head',
+    'sidebar',
+    'rightNav',
+    'postMeta',
+    'postBodyEnd',
+    'footer',
+    'bodyEnd',
+    'comment',
+    'status'
+  ],
+  styles: [
+    'variable',
+    'mixin',
+    'style'
+  ]
+}
+```
+
+### 注入内容
+注入内容請填入autoload.js 的路徑， 如果你不想自定義可以用readme提供的文件;不然的話就要自建l2dapi的後端然後修改autoload.js。 具體方法會稍後説明。
+
+### 注入位置
+如果要的話可以看hexo文檔，簡單説我們這邊需要把代碼放到全部page，所以用`default`。
+
+
+### 參考答案
+如果我是懶人，停在這裏就夠了。
+
+ ```javascript 
+
+hexo.extend.filter.register("theme_inject", function (injects) {
+    hexo.extend.injector.register(
+        "head",
+        "<script src=\"https://fastly.jsdelivr.net/npm/live2d-widgets@0/autoload.js"></script>", 
+        "default",
+        );
+  });
+
+ ```
+
+
+# 自建api
+要自建api，加入自己喜歡的老婆可以接著看下去。首先，請去l2d widget的repo拿一份release，並放到hexo 根目錄底下的source裏。
+
+之後你需要爲他去一個名字，e.g. l2d這個樣子。 如此，你就可以透過`<blog的網址>/l2d/autoload.js` 取得關鍵的調味料。
+
+## API建立
+
+要搞api,首先我們需要[api的代碼](https://github.com/fghrsh/live2d_api), 下載下來之後你可以透過任何方法讓他可以訪問。博主的做法是利用php加apache的docker image, 把整套api文件放到`/www/html`裏面,接著用caddy轉發api後面的東西。 
+
+##
+接著我們需要塞入自定義的東西,如果做到這一步,先檢查一下autoload 跟 api可不可以訪問吧!
+
+## 使用自己的api吧!
+接著讓我們回到autoload.js裏面,把`api path`改成自己api的設置路徑, 接著把`live2d path`改成訪問autoload.js的路徑。
+	
++++warning live2d_path
+讓我們注意,你必須講整個repo的release下載下來,而不是單單autoload.js。否則你不需要改`live2d path` 
+!!因為他要存在於source裏面才可以被訪問!!
++++
+
+##
+如果這步也成功了,剩下的就是定義自己的模型,可以將模型加入到api 的model裏面, 然後在model_list.json加入他。接著就可以享用你的l2d啦.

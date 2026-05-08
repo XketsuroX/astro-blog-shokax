@@ -1,0 +1,83 @@
+---
+title: 有關shokax的雜談
+author: ketsuro
+categories:
+  - Blog 部署系列
+date: 2023-11-03 09:14:01
+tags:
+---
+# 介紹
+這個雜談主要是分享一下我在用Shokax主題的時候的dockerfile。 由於在插入這個主題的時候并沒有shokax的image，然而shokax 又有自己的commandline。所以安全起見，就決定嘗試學一學dockerfile，自己動手，豐衣足食。
+
+# Dockerfile for Hexo & ShokaX
+Dockerfile是參考自spurin/docker-hexo 的repo，加上了ShokaX主題而已，有關composer 和 config的設定請見[這裏](https://github.com/spurin/docker-hexo)
+```docker Dockerfile for Hexo & ShokaX https://github.com/spurin/docker-hexo/blob/master/Dockerfile Dockerfile 參考來源 mark:64-65
+FROM node:latest
+
+# Set the server port as an environmental
+ENV HEXO_SERVER_PORT=4000
+
+# Set the git username and email
+ENV GIT_USER="Joe Bloggs"
+ENV GIT_EMAIL="joe@bloggs.com"
+
+# Install requirements
+RUN \
+  apt-get update && \
+  apt-get install git -y && \
+  npm install hexo-cli -g
+
+# Set workdir
+WORKDIR /app
+
+# Expose Server Port
+EXPOSE ${HEXO_SERVER_PORT}
+
+# Build a base server and configuration if it doesnt exist, then start
+CMD \
+  if [ "$(ls -A /app)" ]; then \
+    echo "***** App directory exists and has content, continuing *****"; \
+  else \
+    echo "***** App directory is empty, initialising with hexo*****" && \
+    hexo init && \
+    npm install && \
+    echo "***** Installing ShokaX and it's cli ****" && \
+    npm install shokax-cli --location=global && \
+    npm install -g node-gyp && \
+    SXC install shokaX && \
+    echo "***** Continue with hexo admin and server ****" && \
+    npm install --save hexo-admin && \
+    npm install hexo-server --save; \
+  fi; \
+  if [ ! -f /app/requirements.txt ]; then \
+    echo "***** App directory contains no requirements.txt file, continuing *****"; \
+  else \
+    echo "***** App directory contains a requirements.txt file, installing npm requirements *****"; \
+    cat /app/requirements.txt | xargs npm --prefer-offline install --save; \
+  fi; \
+  if [ "$(ls -A /app/.ssh 2>/dev/null)" ]; then \
+    echo "***** App .ssh directory exists and has content, continuing *****"; \
+  else \
+    echo "***** App .ssh directory is empty, initialising ssh key and configuring known_hosts for common git repositories (github/gitlab) *****" && \
+    rm -rf ~/.ssh/* && \
+    ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -P "" && \
+    ssh-keyscan github.com > ~/.ssh/known_hosts 2>/dev/null && \
+    ssh-keyscan gitlab.com >> ~/.ssh/known_hosts 2>/dev/null && \
+    cp -r ~/.ssh /app; \
+  fi; \
+  echo "***** Running git config, user = ${GIT_USER}, email = ${GIT_EMAIL} *****" && \
+  git config --global user.email ${GIT_EMAIL} && \
+  git config --global user.name ${GIT_USER} && \
+  echo "***** Copying .ssh from App directory and setting permissions *****" && \
+  cp -r /app/.ssh ~/ && \
+  chmod 600 ~/.ssh/id_rsa && \
+  chmod 600 ~/.ssh/id_rsa.pub && \
+  chmod 700 ~/.ssh && \
+  echo "***** Contents of public ssh key (for deploy) - *****" && \
+  cat ~/.ssh/id_rsa.pub && \
+  echo "**** updating agolia****" && \
+  hexo algolia && \
+  echo "***** Starting server on port ${HEXO_SERVER_PORT} *****" && \
+  hexo server -d -p ${HEXO_SERVER_PORT}
+  ```
+  如果不用**agolia**，或者是第一次初始化，記得把hexo algolia那行comment掉
