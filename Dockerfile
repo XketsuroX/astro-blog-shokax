@@ -1,11 +1,17 @@
-FROM node:lts-alpine AS runtime
+
+FROM oven/bun:1.1 AS build-stage
 WORKDIR /app
+
+COPY package.json bun.lockb ./
+
+RUN bun install --frozen-lockfile
 
 COPY . .
 
-RUN npm install
-RUN npm run build
+RUN bun run build
 
-FROM nginx:stable-alpine
-COPY --from=runtime /app/dist /usr/share/nginx/html
+FROM nginx:alpine
+COPY --from=build-stage /app/dist /usr/share/nginx/html
+
 EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
