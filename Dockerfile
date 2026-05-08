@@ -1,8 +1,11 @@
-
-FROM oven/bun:1.1 AS build-stage
+FROM node:22.12-alpine AS build-stage
+# Using oven/bun directly will cause node version to be too old, so we need to install bun manually
 WORKDIR /app
 
-COPY package.json bun.lock ./
+RUN npm install -g bun
+
+
+COPY package.json bun.lock* ./
 
 RUN bun install
 
@@ -12,6 +15,5 @@ RUN bun run build
 
 FROM nginx:alpine
 COPY --from=build-stage /app/dist /usr/share/nginx/html
-
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
