@@ -1,0 +1,48 @@
+---
+import Layout from "@/layouts/Layout.astro";
+
+const pageTitle = "你去錯地方啦";
+---
+
+<Layout pageTitle={pageTitle}>
+  <div class="mx-auto max-w-60rem px-4 py-8">
+    <h1 class="mb-4 text-2xl font-bold">404 錯誤</h1>
+    <p class="mb-3 leading-7">
+      恭喜你找到了一個不應存在的地方，本頁面將在
+      <span id="countdown-zh">10</span>
+      秒之後返回。如果不想等的話可以 <a href="/">點擊這裏</a> 回去。
+    </p>
+
+    <h2 class="mb-4 mt-8 text-xl font-semibold">404 Error</h2>
+    <p class="leading-7">
+      Congrats! You have found a place that shouldn't appear. You will go back to
+      home page in <span id="countdown-en">10</span> seconds. If you don't want to
+      wait, <a href="/">click here</a> to return.
+    </p>
+  </div>
+
+  <script>
+    const countdownSeconds = 10;
+    const zhCounter = document.getElementById("countdown-zh");
+    const enCounter = document.getElementById("countdown-en");
+    let remaining = countdownSeconds;
+
+    const render = () => {
+      const value = String(remaining);
+      if (zhCounter) zhCounter.textContent = value;
+      if (enCounter) enCounter.textContent = value;
+    };
+
+    render();
+
+    const timer = window.setInterval(() => {
+      remaining -= 1;
+      render();
+
+      if (remaining <= 0) {
+        window.clearInterval(timer);
+        window.location.replace("/");
+      }
+    }, 1000);
+  </script>
+</Layout>
