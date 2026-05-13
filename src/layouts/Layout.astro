@@ -31,6 +31,7 @@ import { resolveHeaderCarouselCovers } from "@/toolkit/headerCarousel";
 import Footer from "@/components/footer/Footer.astro";
 import type { ImageMetadata } from "astro";
 import { currentLocale } from "@/i18n";
+import L2D_Widget from "@/components/L2D_Widget.svelte";
 
 // Accept sidebar props from child pages
 interface PostMeta {
@@ -321,6 +322,7 @@ import SearchPage from "@/components/search/SearchPage.svelte";
       <ImageZoom client:idle />
     </div>
     <FloatingToolbar client:idle nyxPlayer={themeConfig.nyxPlayer} />
+    <L2D_Widget client:idle />
   </body>
 </html>
 
