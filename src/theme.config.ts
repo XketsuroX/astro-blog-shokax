@@ -85,6 +85,15 @@ export default defineConfig({
     show: true,
   },
 
+  // === 文章頁評論 (來自 comment 節點) ===
+  comments: {
+    enable: true,
+    waline: {
+      serverURL: "https://waline.ketsuromoe.win",
+      dark: true,
+    },
+  },
+
   // === 頁腳信息 (來自 footer 節點) ===
   footer: {
     since: 2024,
@@ -131,6 +140,7 @@ export default defineConfig({
       },
     ],
   },
+
 
   // === 封面圖配置 ===
   cover: {
