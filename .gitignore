@@ -38,3 +38,13 @@ test-results/
 playwright-report/
 .playwright-mcp
 .lycheecache
+
+# local agent/tooling state
+.antigravitycli/
+.omg/
+.omo/
+.sisyphus/
+
+# agent knowledge files
+AGENTS.md
+**/AGENTS.md
