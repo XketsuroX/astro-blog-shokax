@@ -1,5 +1,6 @@
-{
-  "images": [
+import { defineCovers } from "@/toolkit/coversConfig";
+
+export default defineCovers([
     "http://image.ketsuromoe.win/i/2023/10/15/652bb46666b14.webp",
     "http://image.ketsuromoe.win/i/2023/10/15/652bb4666690b.webp",
     "http://image.ketsuromoe.win/i/2023/10/15/652bb4666688a.webp",
@@ -98,5 +99,5 @@
     "http://image.ketsuromoe.win/i/2023/10/15/652bb46f51b43.webp",
     "http://image.ketsuromoe.win/i/2023/10/15/652bb46f55c63.webp",
     "http://image.ketsuromoe.win/i/2023/10/15/652bb46f6df5c.webp"
-  ]
-}
+  // 在此加入自定義封面圖片URL
+]);
