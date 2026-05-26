@@ -5,7 +5,7 @@ import CategoryCards from "./categoryCard/CategoryCards.svelte";
 import Divider from "./Divider.astro";
 import { transformIndexPosts } from "@/toolkit/posts/transformIndexPosts";
 import { covers, getPostCover } from "./Images.astro";
-import { resolveHeaderCarouselCovers } from "@/toolkit/headerCarousel";
+import { resolveHeaderCovers } from "@/toolkit/headerCover";
 import { t } from "@/i18n";
 import themeConfig from "@/theme.config";
 
@@ -37,15 +37,14 @@ const {
 } = Astro.props;
 
 const coverConfig = themeConfig.cover || {};
-const headerCarouselCovers = await resolveHeaderCarouselCovers({
-  carouselUrls: coverConfig.carouselUrls,
-  carouselSource: coverConfig.carouselSource,
+const headerCovers = await resolveHeaderCovers({
+  coverUrls: coverConfig.coverUrls,
   fallbackCovers: covers,
 });
 
 const transformOptions = {
   encryptedExcerpt: t("post.encryptedExcerpt"),
-  resolveCover: (post: CollectionEntry<"posts">) => getPostCover(post, headerCarouselCovers),
+  resolveCover: (post: CollectionEntry<"posts">) => getPostCover(post, headerCovers),
 };
 
 const transformedStickyPosts = transformIndexPosts(stickyPosts, transformOptions);
